@@ -28,23 +28,18 @@ function HLCache(args) {
  * Setter with a time pointer
  **/
 HLCache.prototype.set = function(key, value, now) {
-  if (arguments.length < 2) {
-    throw new Error("HLCache::set expect 3 arguments, " +
-        arguments.length + " given");
-  }
+  if (typeof now === "undefined") now = Date.now();
 
   // if the pool is full, do nothing
   if (this.size >= this.max) return false;
 
   // create new entry if necessary
-  var entry;
   if (!(key in this.pool)) {
-    entry = this.pool[key] = new Entry(now);
+    this.pool[key] = new Entry(now);
     this.size++;
   }
-  else {
-    entry = this.pool[key];
-  }
+
+  var entry = this.pool[key];
 
   var current = this.current;
   var lifespan = this.lifespan;
@@ -52,10 +47,13 @@ HLCache.prototype.set = function(key, value, now) {
   // setting value 
   // and a scheduled eviction
   if (!entry.has(current)) {
-    this.unset(key, current, lifespan);
+    unset(this, key, current, lifespan);
     
     entry[current] = value;
   }
+
+  // mark for GC
+  entry = null;
 
   return true;
 };
@@ -64,14 +62,11 @@ HLCache.prototype.set = function(key, value, now) {
  * Getter with a time pointer
  **/
 HLCache.prototype.get = function(key, now) {
-  if (arguments.length < 1) {
-    throw new Error("HLCache::get expect 2 arguments, " +
-        arguments.length + " given");
-  }
+  if (typeof now === "undefined") now = Date.now();
 
   var entry = (key in this.pool) && this.pool[key];
 
-  if (!entry) return Entry.void;
+  if (!(entry instanceof Entry)) return Entry.void;
 
   var current = this.current;
   var next = this.next;
@@ -104,6 +99,9 @@ HLCache.prototype.get = function(key, now) {
   }
 };
 
+/**
+ * Check if key exists in cache pool
+ **/
 HLCache.prototype.has = function(key) {
   if (!(key in this.pool)) return false;
 
@@ -121,25 +119,18 @@ HLCache.prototype.has = function(key) {
   );
 }
 
-/**
- * scheduled value eviction
- **/
-HLCache.prototype.unset = function (key, index, timeout) {
-  if (!key || !this.pool) return;
-  if (!(key in this.pool)) return;
-
-  this.pool[key].timer = setTimeout(del, timeout, this, key, index);
-};
 
 /**
- * delete cache at key
+ * Delete cache at key
  **/
 HLCache.prototype.del = function(key) {
   del(this, key, this.current);
   del(this, key, this.next);
 };
 
-
+/**
+ * Reset cache pool to its pristine condition
+ **/
 HLCache.prototype.reset = function() {
   // reset cache version indices
   this.current = CURRENT;
@@ -160,6 +151,9 @@ HLCache.prototype.reset = function() {
   this.size = 0;
 };
 
+/**
+ * just make it a bit more compatible w/ LRU Cache test :-P
+ **/
 Object.defineProperty(HLCache.prototype, "length", {
   get: function() {
     return this.size;
@@ -167,6 +161,17 @@ Object.defineProperty(HLCache.prototype, "length", {
 });
 
 /**
+ * @private
+ * scheduled value eviction
+ **/
+function unset(self, key, index, timeout) {
+  if (!key || !self.pool) return;
+  if (!(key in self.pool)) return;
+
+  self.pool[key].timer = setTimeout(del, timeout, self, key, index);
+};
+/**
+ * @private
  * delete cache at key/pointer
  **/
 function del(self, key, index) {
@@ -205,6 +210,7 @@ function del(self, key, index) {
  * individual cache entry
  **/
 function Entry(now) {
+  if (typeof now === "undefined") now = Date.now();
   // create baseline for timeline comparison  
   this.baseline = now;
 
@@ -228,9 +234,10 @@ Entry.prototype.reset = function(name) {
 };
 
 Entry.prototype.clearTimer = function() {
-  var timer = "timer";
-  if (this.has(timer)) clearTimeout(this.timer);
-  this.reset(timer);
+  if (!this.has("timer")) return;
+
+  clearTimeout(this.timer);
+  this.timer = Entry.void;
 }
 
 Object.defineProperty(Entry, "void", {
