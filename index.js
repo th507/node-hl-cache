@@ -19,7 +19,7 @@ function HLCache(args) {
   // we actually schedule the destruction a little sooner
   // than the theoretical time limit
   // in case there is some delay in setTimeout queue
-  this.halflife = (this.lifespan / 2) | 0 - this.gap;
+  this.halflife = (this.lifespan / 2) - this.gap;
 
   this.reset();
 }
@@ -47,11 +47,12 @@ HLCache.prototype.set = function(key, value, now) {
   }
 
   var current = this.current;
+  var lifespan = this.lifespan;
 
   // setting value 
   // and a scheduled eviction
   if (!entry.has(current)) {
-    this.unset(key, current, this.lifespan);
+    this.unset(key, current, lifespan);
     
     entry[current] = value;
   }

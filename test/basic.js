@@ -199,11 +199,11 @@ test("update w/ time", function(t) {
     cache.set('qux', 4)
     t.equal(cache.get('qux'), 4)
     t.equal(cache.length, 1)
-  }, 5)
+  }, 6)
 
   setTimeout(function() {
     t.equal(cache.get('qux'), undefined)
     t.equal(cache.length, 0)
     t.end()
-  }, 12)
+  }, 14)
 })
