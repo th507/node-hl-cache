@@ -43,8 +43,8 @@ test('no leaks', function (t) {
   var end = process.memoryUsage()
   t.equal(refs, startRefs, 'no leaky refs')
 
-  console.error('start: %j\n' +
-                'end:   %j', start, end);
+  console.error('\n  start: %j\n' +
+                '  end:   %j', start, end);
   t.pass();
-  t.end();
+  t.end()
 })

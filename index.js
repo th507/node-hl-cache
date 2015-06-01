@@ -151,6 +151,16 @@ HLCache.prototype.reset = function() {
   this.size = 0;
 };
 
+// ES6 flavored iterator
+// similar to Array::entries
+if (typeof Symbol !== "undefined" && "iterator" in Symbol) {
+  HLCache.prototype.entries = function() {
+    return Object.keys(this.pool).map(function(key) {
+      return [key, this.pool[key][this.current]];
+    }, this)[Symbol.iterator]();
+  };
+}
+
 /**
  * just make it a bit more compatible w/ LRU Cache test :-P
  **/
