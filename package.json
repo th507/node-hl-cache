@@ -1,0 +1,21 @@
+{
+  "name": "hl-cache",
+  "version": "0.0.1",
+  "description": "Clock cache variant that keeps a ghost copy for an extended period of time. Useful for implementing session-level cache.",
+  "main": "index.js",
+  "scripts": {
+    "test": "tap test --gc"
+  },
+  "keywords": [
+    "cache",
+    "clock",
+    "session"
+  ],
+  "author": "Jingwei \"John\" Liu <liujingwei@gmail.com>",
+  "repository": "...",
+  "license": "MIT",
+  "devDependencies": {
+    "tap": "^1.2.0",
+    "weak": "^0.4.1"
+  }
+}
