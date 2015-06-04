@@ -28,6 +28,7 @@ test("exceeds max", function (t) {
   t.end()
 })
 
+
 test("del", function (t) {
   var lifespan = 20
   var cache = new HLCache({
@@ -46,13 +47,19 @@ test("del", function (t) {
 test("max", function (t) {
   var cache = new HLCache({
     max:3,
-    lifespan: 20
+    lifespan: 200
   })
+
 
   // test changing the max, verify that the HLCache items get dropped.
   cache.max = 100
+
+  var bb = Date.now()
   for (var i = 0; i < 100; i ++) cache.set(i, i)
+
   t.equal(cache.length, 100)
+
+    
   for (var i = 0; i < 100; i ++) {
     t.equal(cache.get(i), i)
   }
@@ -104,12 +111,13 @@ test("drop the old items", function(t) {
     lifespan: 50
   })
 
-  cache.set("a", "A")
+  var timestamp = Date.now()
+  cache.set("a", "A", timestamp)
 
   setTimeout(function () {
     cache.set("b", "b")
-    t.equal(cache.get("a"), "A")
-  }, 25)
+    t.equal(cache.get("a", timestamp + 20), "A")
+  }, 45)
 
   setTimeout(function () {
     cache.set("c", "C")
@@ -178,32 +186,39 @@ test("has()", function(t) {
   }, 10)
 })
 
+
 test("update w/ time", function(t) {
   var cache = HLCache({
     max: 2,
-    lifespan: 5
+    lifespan: 200
   });
 
-  cache.set('foo', 1);
-  cache.set('bar', 2);
-  cache.del('bar');
-  cache.set('baz', 3);
-  cache.set('qux', 4);
+  var timestamp = Date.now()
+  cache.set('foo', 1, timestamp)
+  cache.set('bar', 2, timestamp)
+  cache.del('bar')
+  cache.set('baz', 3, timestamp)
+  cache.set('qux', 4, timestamp)
 
-  t.equal(cache.get('foo'), 1)
-  t.equal(cache.get('bar'), undefined)
-  t.equal(cache.get('baz'), 3)
-  t.equal(cache.get('qux'), undefined)
+  t.equal(cache.get('foo', timestamp), 1)
+  t.equal(cache.get('bar', timestamp), undefined)
+  t.equal(cache.get('baz', timestamp), 3)
+  t.equal(cache.get('qux', timestamp), undefined)
 
   setTimeout(function() {
-    cache.set('qux', 4)
-    t.equal(cache.get('qux'), 4)
+    t.equal(cache.get("qux"), undefined)
+    cache.set('qux', 5)
+    t.equal(cache.get('qux'), 5)
     t.equal(cache.length, 1)
-  }, 6)
+    timestamp = Date.now()
+  }, 205)
 
   setTimeout(function() {
     t.equal(cache.get('qux'), undefined)
     t.equal(cache.length, 0)
+  }, 420)
+
+  setTimeout(function() {
     t.end()
-  }, 14)
+  }, 800)
 })
