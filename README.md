@@ -22,16 +22,20 @@ var cache = new HLCache({
 If the number of items in the cache pool exceeds `max`, the item will not be store in the cache.
 
 - `HLCache::get(key[, timestamp])`
-	Get the value by `key`. `timestamp` is optional, it is used to indicate the time the visit comes from. If no value is provided, `timestamp` is set to `Date.now()`.
+
+Get the value by `key`. `timestamp` is optional, it is used to indicate the time the visit comes from. If no value is provided, `timestamp` is set to `Date.now()`.
 
 - `HLCache::set(key, value[, timestamp])`
-	Set the value of `key` to `value`. `timestamp` is optional, it is used to indicate the time the visit comes from. If no value is provided, `timestamp` is set to `Date.now()`.
+
+Set the value of `key` to `value`. `timestamp` is optional, it is used to indicate the time the visit comes from. If no value is provided, `timestamp` is set to `Date.now()`.
 
 - `HLCache::has(key)`
-	Check if a key is in the cache.
+
+Check if a key is in the cache.
 
 - `length`
-	Return total length of objects in cache.
+
+Return total length of objects in cache.
 
 # Half-life cache algorithm
 ![Half-life cache algorithm is a variant of clock cache algorithm that keeps a ghost copy for an extended period of time.](./hl-cache.png)
