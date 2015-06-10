@@ -1,8 +1,12 @@
 {
   "name": "hl-cache",
   "version": "0.0.1",
-  "description": "Clock cache variant that keeps a ghost copy for an extended period of time. Useful for implementing session-level cache.",
+  "description": "A variant of clock cache for implementing shared session cache.",
   "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/th507/node-hl-cache"
+  },
   "scripts": {
     "test": "tap test --gc"
   },
@@ -11,7 +15,14 @@
     "clock",
     "session"
   ],
-  "author": "Jingwei \"John\" Liu <liujingwei@gmail.com>",
+  "author": {
+    "name": "Jingwei Liu",
+    "email": "liujingwei@gmail.com"
+  },
+  "bugs": {
+    "url": "http://github.com/th507/node-hl-cache/issues",
+    "email": "liujingwei@gmail.com"
+  },
   "repository": "...",
   "license": "MIT",
   "devDependencies": {
