@@ -19,7 +19,7 @@ var cache = new HLCache({
 });
 ```
 
-	If the number of items in the cache pool exceeds `max`, the item will not be store in the cache.
+If the number of items in the cache pool exceeds `max`, the item will not be store in the cache.
 
 - `HLCache::get(key[, timestamp])`
 	Get the value by `key`. `timestamp` is optional, it is used to indicate the time the visit comes from. If no value is provided, `timestamp` is set to `Date.now()`.
