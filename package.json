@@ -1,12 +1,9 @@
 {
   "name": "hl-cache",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "A variant of clock cache for implementing shared session cache.",
   "main": "index.js",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/th507/node-hl-cache"
-  },
+  "repository": "...",
   "scripts": {
     "test": "tap test --gc"
   },
@@ -23,7 +20,6 @@
     "url": "http://github.com/th507/node-hl-cache/issues",
     "email": "liujingwei@gmail.com"
   },
-  "repository": "...",
   "license": "MIT",
   "devDependencies": {
     "tap": "^1.2.0",
