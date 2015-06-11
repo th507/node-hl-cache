@@ -1,11 +1,18 @@
 "use strict";
 
-module.exports = HLCache;
-
 var CURRENT = "current";
 var NEXT = "next";
 
+
 var UNDEFINED = "undefined";
+
+if (typeof Map === UNDEFINED) {
+  var Map = require('es6-map');
+}
+
+module.exports = HLCache;
+
+
 
 function has(o, k) {
   return Object.prototype.hasOwnProperty.call(o, k);
@@ -43,15 +50,14 @@ function HLCache(args) {
  **/
 HLCache.prototype.set = function(key, value, now) {
   // if the pool is full, do nothing
-  if (this.length >= this.max) return false;
+  if (this.pool.size >= this.max) return false;
 
   // create new entry if necessary
-  if (!(key in this.pool)) {
-    this.pool[key] = new Entry(now);
-    this.length++;
+  if (!this.pool.has(key)) {
+    this.pool.set(key, new Entry(now));
   }
 
-  var entry = this.pool[key];
+  var entry = this.pool.get(key);
 
   var current = entry.current;
   var lifespan = this.lifespan;
@@ -76,7 +82,7 @@ HLCache.prototype.set = function(key, value, now) {
 HLCache.prototype.get = function(key, now) {
   if (typeof now === UNDEFINED) now = Date.now();
 
-  var entry = (key in this.pool) && this.pool[key];
+  var entry = this.pool.has(key) && this.pool.get(key);
 
   if (!(entry instanceof Entry)) return Entry.void;
 
@@ -101,12 +107,13 @@ HLCache.prototype.get = function(key, now) {
  * Check if key exists in cache pool
  **/
 HLCache.prototype.has = function(key) {
-  if (!(key in this.pool)) return false;
+  if (!key) return false;
+  if (!this.pool.has(key)) return false;
 
-  var entry = this.pool[key];
+  var entry = this.pool.get(key);
 
   if (!(entry instanceof Entry)) {
-    delete this.pool[key];
+    this.pool.delete(key);
     entry = null;
     return false;
   }
@@ -119,6 +126,9 @@ HLCache.prototype.has = function(key) {
  * Delete cache at key
  **/
 HLCache.prototype.del = function(key) {
+  if (!key) return;
+  if (!this.pool.has(key)) return;
+
   del(this, key, CURRENT);
   del(this, key, NEXT);
 };
@@ -127,29 +137,30 @@ HLCache.prototype.del = function(key) {
  * Reset cache pool to its pristine condition
  **/
 HLCache.prototype.reset = function() {
-  for (var i in this.pool) {
-    if (has(this.pool, i)) {
-      // stop all timers
-      this.pool[i].timer = Entry.void;
-      this.pool[i] = null;
-    }
+  if (this.pool) {
+    this.pool.forEach(function(entry) {
+      entry.timer = Entry.void;
+      entry = null;
+    });
+
+    this.pool.clear();
   }
 
   // pool storing cache for all datasources
-  this.pool = Object.create(null);
-
-  // cached objects in the cache pool 
-  this.length = 0;
+  this.pool = new Map();
 };
 
-// ES6 flavored iterator
-// similar to Array::entries
-if (typeof Symbol !== UNDEFINED && "iterator" in Symbol) {
-  HLCache.prototype.entries = function() {
-    return Object.keys(this.pool).map(function(key) {
-      return [key, this.pool[key].get(CURRENT)];
-    }, this)[Symbol.iterator]();
-  };
+Object.defineProperty(HLCache.prototype, "length", {
+  get: function() {
+    return this.pool.size;
+  }
+});
+
+
+HLCache.prototype.forEach = function(fn) {
+  this.pool.forEach(function(entry, key, map) {
+    fn.call(this, entry.get(CURRENT), key);
+  }, this);
 }
 
 
@@ -158,22 +169,19 @@ if (typeof Symbol !== UNDEFINED && "iterator" in Symbol) {
  * scheduled value eviction
  **/
 function unset(self, key, name, timeout) {
-  if (!key || !self.pool) return;
-  if (!(key in self.pool)) return;
-
-  self.pool[key].timer = setTimeout(del, timeout, self, key, name);
+  var entry = self.pool.get(key);
+  entry.timer = setTimeout(del, timeout, self, key, name);
 };
 /**
  * @private
  * delete cache at key/pointer
  **/
 function del(self, key, name) {
-  if (!self.pool || !(key in self.pool)) return;
-
-  var entry = self.pool[key];
+  var entry = self.pool.get(key);
 
   if (!(entry instanceof Entry)) {
-    return delete self.pool[key];
+    self.pool.delete(key);
+    return true;
   }
 
   entry.timer = Entry.void;
@@ -185,13 +193,10 @@ function del(self, key, name) {
        !entry.has(NEXT)
   ) {
     entry = null;
-    delete self.pool[key];
+    self.pool.delete(key);
 
     // mark for GC
     key = null;
-
-    // reduce pool length
-    if (self.length > 0) self.length--;
   }
 }
 

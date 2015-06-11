@@ -24,5 +24,8 @@
   "devDependencies": {
     "tap": "^1.2.0",
     "weak": "^0.4.1"
+  },
+  "optionalDependencies": {
+    "es6-map": "^0.1.1"
   }
 }
