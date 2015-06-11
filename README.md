@@ -37,6 +37,18 @@ Check if a key is in the cache.
 
 Return total length of objects in cache.
 
+# Running on Node.js <= 0.10.x
+This package use `Map` and [es6-map](https://www.npmjs.com/package/es6-map) to polyfill `Map` on old version of Node.
+
+es6-map is install as [`optionalDependencies`](https://docs.npmjs.com/files/package.json#optionaldependencies). The dependencies section of your application's `package.json` file must contain es6-map in order for the polyfill to work.
+
+# Test
+
+```bash
+$ npm test
+```
+
+
 # Half-life cache algorithm
 ![Half-life cache algorithm is a variant of clock cache algorithm that keeps a ghost copy for an extended period of time.](https://github.com/th507/node-hl-cache/raw/master/hl-cache.png)
 
