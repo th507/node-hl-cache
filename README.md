@@ -1,6 +1,10 @@
 # HLCache (Half-life cache)
 This is a variant of Clock cache algorithm that keeps a ghost copy for an extended period of time. It could be useful for implementing shared session cache.
 
+[![Build Status][travis-badge]][travis-url]
+[![NPM version][npm-badge]][npm-package]
+[![License][license-badge]][license]
+
 # Install
 ```bash
 $ npm install hl-cache
@@ -61,3 +65,9 @@ Copyright (c) 2015 Jingwei "John" Liu
 
 Licensed under the MIT license.
 
+[npm-badge]: https://img.shields.io/npm/v/hl-cache.svg?style=flat-square
+[npm-package]: https://www.npmjs.com/package/hl-cache
+[travis-badge]: https://img.shields.io/travis/th507/node-hl-cache.svg?style=flat-square
+[license-badge]: http://img.shields.io/npm/l/hl-cache.svg?style=flat-square
+[travis-url]: https://travis-ci.org/th507/node-hl-cache
+[license]: LICENSE
