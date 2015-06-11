@@ -38,7 +38,7 @@ Check if a key is in the cache.
 Return total length of objects in cache.
 
 # Half-life cache algorithm
-![Half-life cache algorithm is a variant of clock cache algorithm that keeps a ghost copy for an extended period of time.](./hl-cache.png)
+![Half-life cache algorithm is a variant of clock cache algorithm that keeps a ghost copy for an extended period of time.](https://github.com/th507/node-hl-cache/raw/master/hl-cache.png)
 
 Half-life cache could (almost) guarantees consistent read in cache’s lifespan, which could be useful for implementing shared session cache.
 
