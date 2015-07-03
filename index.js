@@ -6,8 +6,9 @@ var NEXT = "next";
 
 var UNDEFINED = "undefined";
 
+var Map = global.Map;
 if (typeof Map === UNDEFINED) {
-  var Map = require('es6-map');
+  Map = require('es6-map');
 }
 
 module.exports = HLCache;
