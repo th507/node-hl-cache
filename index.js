@@ -4,15 +4,12 @@ var CURRENT = "current"
 var NEXT = "next"
 
 
-var UNDEFINED = "undefined"
-
 var Map = global.Map
-if (typeof Map === UNDEFINED) {
+if (typeof Map === "undefined") {
   Map = require('es6-map')
 }
 
 module.exports = HLCache
-
 
 
 function has(o, k) {
@@ -37,13 +34,13 @@ function HLCache(args) {
   var gap
   if ("gap" in args) gap = args.gap
   else gap = this.lifespan / 100
-  gap = gap | 0
+
   if (gap > 200) gap = 200
   else if (gap < 2) gap = 2
 
   this.halflife = parseInt(this.lifespan / 2 - gap, 10)
 
-  this.reset()
+  this.pool = new Map()
 }
 
 /**
@@ -81,7 +78,7 @@ HLCache.prototype.set = function(key, value, now) {
  * Getter with a time pointer
  **/
 HLCache.prototype.get = function(key, now) {
-  if (typeof now === UNDEFINED) now = Date.now()
+  if (typeof now === "undefined") now = Date.now()
 
   var entry = this.pool.has(key) && this.pool.get(key)
 
@@ -138,17 +135,19 @@ HLCache.prototype.del = function(key) {
  * Reset cache pool to its pristine condition
  **/
 HLCache.prototype.reset = function() {
-  if (this.pool) {
-    this.pool.forEach(function(entry) {
-      entry.timer = Entry.void
-      entry = null
-    })
+  if (!this.pool) {
+    // pool storing cache for all datasources
+    this.pool = new Map()
 
-    this.pool.clear()
+    return this
   }
 
-  // pool storing cache for all datasources
-  this.pool = new Map()
+  this.pool.forEach(function(entry) {
+    entry.timer = Entry.void
+    entry = null
+  })
+
+  this.pool.clear()
 }
 
 Object.defineProperty(HLCache.prototype, "length", {
@@ -207,7 +206,7 @@ var _next = 1
  * individual cache entry
  **/
 function Entry(now) {
-  if (typeof now === UNDEFINED) now = Date.now()
+  if (typeof now === "undefined") now = Date.now()
   // create baseline for timeline comparison
   this.baseline = now
 
