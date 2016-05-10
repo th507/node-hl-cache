@@ -5,7 +5,9 @@
   "main": "index.js",
   "repository": "...",
   "scripts": {
-    "test": "tap test --gc"
+    "lint": "eslint .",
+    "testonly": "tap test --gc",
+    "test": "${npm_package_scripts_lint} && ${npm_package_scripts_testonly}"
   },
   "keywords": [
     "cache",
@@ -22,8 +24,9 @@
   },
   "license": "MIT",
   "devDependencies": {
-    "tap": "^1.2.0",
-    "weak": "^0.4.1"
+    "eslint": "^2.9.0",
+    "tap": "^5.7.0",
+    "weak": "^1.0.1"
   },
   "optionalDependencies": {
     "es6-map": "^0.1.1"

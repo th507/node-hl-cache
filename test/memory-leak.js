@@ -1,6 +1,8 @@
 #!/usr/bin/env node --expose_gc
 
-var weak = require('weak');
+/* global gc */
+
+var weak = require('weak')
 var test = require('tap').test
 var HLCache = require('../')
 var l = new HLCache({ max: 10, lifespan: 20 })
@@ -15,12 +17,12 @@ function deref() {
 }
 
 test('no leaks', function (t) {
+  var i
   // fill up the cache
-  for (var i = 0; i < 100; i++) {
-    l.set(i, new X);
+  for (i = 0; i < 100; i++) {
+    l.set(i, new X)
     // throw some gets in there, too.
-    if (i % 2 === 0)
-      l.get(i / 2)
+    if (i % 2 === 0) l.get(i / 2)
   }
 
   gc()
@@ -31,11 +33,10 @@ test('no leaks', function (t) {
   var startRefs = refs
 
   // do it again, but more
-  for (var i = 0; i < 10000; i++) {
-    l.set(i, new X);
+  for (i = 0; i < 10000; i++) {
+    l.set(i, new X)
     // throw some gets in there, too.
-    if (i % 2 === 0)
-      l.get(i / 2)
+    if (i % 2 === 0) l.get(i / 2)
   }
 
   gc()
@@ -44,7 +45,7 @@ test('no leaks', function (t) {
   t.equal(refs, startRefs, 'no leaky refs')
 
   console.error('\n  start: %j\n' +
-                '  end:   %j', start, end);
-  t.pass();
+                '  end:   %j', start, end)
+  t.pass()
   t.end()
 })

@@ -1,5 +1,5 @@
 var test = require("tap").test
-  , HLCache = require("../")
+var HLCache = require("../")
 
 test("basic", function (t) {
   var cache = new HLCache({
@@ -32,12 +32,12 @@ test("exceeds max", function (t) {
 test("del", function (t) {
   var lifespan = 20
   var cache = new HLCache({
-    max:2,
+    max: 2,
     lifespan: lifespan
   })
   cache.set("a", "A")
   cache.del("a")
-  setTimeout(function(){
+  setTimeout(function() {
     t.equal(cache.get("a"), undefined)
     t.end()
   }, lifespan)
@@ -46,7 +46,7 @@ test("del", function (t) {
 
 test("max", function (t) {
   var cache = new HLCache({
-    max:3,
+    max: 3,
     lifespan: 200
   })
 
@@ -55,12 +55,13 @@ test("max", function (t) {
   cache.max = 100
 
   var bb = Date.now()
-  for (var i = 0; i < 100; i ++) cache.set(i, i)
+  var i
+  for (i = 0; i < 100; i ++) cache.set(i, i)
 
   t.equal(cache.length, 100)
 
-    
-  for (var i = 0; i < 100; i ++) {
+
+  for (i = 0; i < 100; i ++) {
     t.equal(cache.get(i), i)
   }
 
@@ -191,7 +192,7 @@ test("update w/ time", function(t) {
   var cache = HLCache({
     max: 2,
     lifespan: 200
-  });
+  })
 
   var timestamp = Date.now()
   cache.set('foo', 1, timestamp)

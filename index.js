@@ -1,49 +1,49 @@
-"use strict";
+"use strict"
 
-var CURRENT = "current";
-var NEXT = "next";
+var CURRENT = "current"
+var NEXT = "next"
 
 
-var UNDEFINED = "undefined";
+var UNDEFINED = "undefined"
 
-var Map = global.Map;
+var Map = global.Map
 if (typeof Map === UNDEFINED) {
-  Map = require('es6-map');
+  Map = require('es6-map')
 }
 
-module.exports = HLCache;
+module.exports = HLCache
 
 
 
 function has(o, k) {
-  return Object.prototype.hasOwnProperty.call(o, k);
+  return Object.prototype.hasOwnProperty.call(o, k)
 }
 
 function HLCache(args) {
   if (!(this instanceof HLCache)) {
-    return new HLCache(args);
+    return new HLCache(args)
   }
 
-  this.max = parseInt(args.max || 1000, 10);
+  this.max = parseInt(args.max || 1000, 10)
 
   // time to generate an other copy
-  this.lifespan = parseInt(args.lifespan || 5000, 10);
+  this.lifespan = parseInt(args.lifespan || 5000, 10)
 
   // time to destroy the inactive copy of the cache
   // we actually schedule the destruction a little sooner
   // than the theoretical time limit
   // in case there is some delay in setTimeout queue
 
-  var gap;
-  if ("gap" in args) gap = args.gap;
-  else gap = this.lifespan / 100;
-  gap = gap | 0;
-  if (gap > 200) gap = 200;
-  else if (gap < 2) gap = 2;
+  var gap
+  if ("gap" in args) gap = args.gap
+  else gap = this.lifespan / 100
+  gap = gap | 0
+  if (gap > 200) gap = 200
+  else if (gap < 2) gap = 2
 
-  this.halflife = parseInt(this.lifespan / 2 - gap, 10);
+  this.halflife = parseInt(this.lifespan / 2 - gap, 10)
 
-  this.reset();
+  this.reset()
 }
 
 /**
@@ -51,75 +51,75 @@ function HLCache(args) {
  **/
 HLCache.prototype.set = function(key, value, now) {
   // if the pool is full, do nothing
-  if (this.pool.size >= this.max) return false;
+  if (this.pool.size >= this.max) return false
 
   // create new entry if necessary
   if (!this.pool.has(key)) {
-    this.pool.set(key, new Entry(now));
+    this.pool.set(key, new Entry(now))
   }
 
-  var entry = this.pool.get(key);
+  var entry = this.pool.get(key)
 
-  var current = entry.current;
-  var lifespan = this.lifespan;
+  var current = entry.current
+  var lifespan = this.lifespan
 
-  // setting value 
+  // setting value
   // and a scheduled eviction
   if (!entry.has(CURRENT)) {
-    unset(this, key, CURRENT, lifespan);
-    
-    entry[entry.current] = value;
+    unset(this, key, CURRENT, lifespan)
+
+    entry[entry.current] = value
   }
 
   // mark for GC
-  entry = null;
+  entry = null
 
-  return true;
-};
+  return true
+}
 
 /**
  * Getter with a time pointer
  **/
 HLCache.prototype.get = function(key, now) {
-  if (typeof now === UNDEFINED) now = Date.now();
+  if (typeof now === UNDEFINED) now = Date.now()
 
-  var entry = this.pool.has(key) && this.pool.get(key);
+  var entry = this.pool.has(key) && this.pool.get(key)
 
-  if (!(entry instanceof Entry)) return Entry.void;
+  if (!(entry instanceof Entry)) return Entry.void
 
   // if a request comes from the last cache cycle
   // yields corresponding (previous) cache
-  if (now < entry.baseline) return entry.get(NEXT);
+  if (now < entry.baseline) return entry.get(NEXT)
 
   if (now >= entry.baseline + this.halflife) {
-    //console.log("--flipped", now, entry.baseline, this.halflife);
-    entry.baseline = now;
+    //console.log("--flipped", now, entry.baseline, this.halflife)
+    entry.baseline = now
 
     // swapping indices
-    var tmp = entry.current;
-    entry.current = entry.next;
-    entry.next = tmp;
+    var tmp = entry.current
+    entry.current = entry.next
+    entry.next = tmp
   }
 
-  return entry.get(CURRENT);
-};
+  return entry.get(CURRENT)
+}
 
 /**
  * Check if key exists in cache pool
  **/
 HLCache.prototype.has = function(key) {
-  if (!key) return false;
-  if (!this.pool.has(key)) return false;
+  if (!key) return false
+  if (!this.pool.has(key)) return false
 
-  var entry = this.pool.get(key);
+  var entry = this.pool.get(key)
 
   if (!(entry instanceof Entry)) {
-    this.pool.delete(key);
-    entry = null;
-    return false;
+    this.pool.delete(key)
+    entry = null
+    return false
   }
 
-  return entry.has(CURRENT);
+  return entry.has(CURRENT)
 }
 
 
@@ -127,12 +127,12 @@ HLCache.prototype.has = function(key) {
  * Delete cache at key
  **/
 HLCache.prototype.del = function(key) {
-  if (!key) return;
-  if (!this.pool.has(key)) return;
+  if (!key) return
+  if (!this.pool.has(key)) return
 
-  del(this, key, CURRENT);
-  del(this, key, NEXT);
-};
+  del(this, key, CURRENT)
+  del(this, key, NEXT)
+}
 
 /**
  * Reset cache pool to its pristine condition
@@ -140,28 +140,28 @@ HLCache.prototype.del = function(key) {
 HLCache.prototype.reset = function() {
   if (this.pool) {
     this.pool.forEach(function(entry) {
-      entry.timer = Entry.void;
-      entry = null;
-    });
+      entry.timer = Entry.void
+      entry = null
+    })
 
-    this.pool.clear();
+    this.pool.clear()
   }
 
   // pool storing cache for all datasources
-  this.pool = new Map();
-};
+  this.pool = new Map()
+}
 
 Object.defineProperty(HLCache.prototype, "length", {
   get: function() {
-    return this.pool.size;
+    return this.pool.size
   }
-});
+})
 
 
 HLCache.prototype.forEach = function(fn) {
   this.pool.forEach(function(entry, key, map) {
-    fn.call(this, entry.get(CURRENT), key);
-  }, this);
+    fn.call(this, entry.get(CURRENT), key)
+  }, this)
 }
 
 
@@ -170,92 +170,92 @@ HLCache.prototype.forEach = function(fn) {
  * scheduled value eviction
  **/
 function unset(self, key, name, timeout) {
-  var entry = self.pool.get(key);
-  entry.timer = setTimeout(del, timeout, self, key, name);
-};
+  var entry = self.pool.get(key)
+  entry.timer = setTimeout(del, timeout, self, key, name)
+}
 /**
  * @private
  * delete cache at key/pointer
  **/
 function del(self, key, name) {
-  var entry = self.pool.get(key);
+  var entry = self.pool.get(key)
 
   if (!(entry instanceof Entry)) {
-    self.pool.delete(key);
-    return true;
+    self.pool.delete(key)
+    return true
   }
 
-  entry.timer = Entry.void;
-  entry.reset(name);
+  entry.timer = Entry.void
+  entry.reset(name)
 
   // delete pool[key] and free 'key' string
   // if both pointer is gone
   if ( !entry.has(CURRENT) &&
        !entry.has(NEXT)
   ) {
-    entry = null;
-    self.pool.delete(key);
+    entry = null
+    self.pool.delete(key)
 
     // mark for GC
-    key = null;
+    key = null
   }
 }
 
-var _current = 0;
-var _next = 1;
+var _current = 0
+var _next = 1
 /**
  * individual cache entry
  **/
 function Entry(now) {
-  if (typeof now === UNDEFINED) now = Date.now();
-  // create baseline for timeline comparison  
-  this.baseline = now;
+  if (typeof now === UNDEFINED) now = Date.now()
+  // create baseline for timeline comparison
+  this.baseline = now
 
   // avoid unnecessary object mutation
   // by using Entry as a struct
-  this[CURRENT] = _current;
-  this[NEXT] = _next;
+  this[CURRENT] = _current
+  this[NEXT] = _next
 
-  this[_current] = Entry.void;
-  this[_next] = Entry.void;
+  this[_current] = Entry.void
+  this[_next] = Entry.void
 
 
 
-  var timer = Entry.void;
+  var timer = Entry.void
   Object.defineProperty(this, "timer", {
     enumerable: false,
     configurable: true,
     get: function() {
-      return timer;
+      return timer
     },
     set: function(newValue) {
       if (timer !== Entry.void && newValue === Entry.void) {
-        clearTimeout(timer);
+        clearTimeout(timer)
       }
-      timer = newValue;
+      timer = newValue
     }
-  });
+  })
 }
 
 Entry.prototype.get = function(name) {
-  var index = this[name];
-  return this[index];
+  var index = this[name]
+  return this[index]
 }
 
 Entry.prototype.has = function(name) {
-  var index = this[name];
-  return this[index] !== Entry.void;
-};
+  var index = this[name]
+  return this[index] !== Entry.void
+}
 
 Entry.prototype.reset = function(name) {
   // delete cache/prop
-  this[this[name]] = Entry.void;
-};
+  this[this[name]] = Entry.void
+}
 
 
 Object.defineProperty(Entry, "void", {
   enumerable: false,
   configurable: false,
   writable: false,
-  value: void 0
-});
+  value: undefined
+})

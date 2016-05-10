@@ -1,11 +1,11 @@
+"use strict"
+
 var test = require('tap').test
 var HLCache = require('../')
 
-"use strict";
-
 test('forEach', function (t) {
   var l = new HLCache({ max: 5, lifespan: 200})
-  var i;
+  var i
   for (i = 0; i < 10; i ++) {
     l.set(i.toString(), i.toString(2))
   }
@@ -14,7 +14,7 @@ test('forEach', function (t) {
   l.forEach(function(val, key) {
     t.equal(key, (i++).toString())
     t.equal(val, (key | 0).toString(2))
-  });
+  })
 
   t.equal(i, 5)
 
