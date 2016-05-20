@@ -4,9 +4,8 @@ var CURRENT = "current"
 var NEXT = "next"
 
 
-var Map = global.Map
-if (typeof Map === "undefined") {
-  Map = require('es6-map')
+if (typeof global.Map !== "function") {
+  throw "Current Node.js does not support Map"
 }
 
 module.exports = HLCache

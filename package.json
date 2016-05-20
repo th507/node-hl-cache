@@ -25,10 +25,6 @@
   "license": "MIT",
   "devDependencies": {
     "eslint": "^2.9.0",
-    "tap": "^5.7.0",
-    "weak": "^1.0.1"
-  },
-  "optionalDependencies": {
-    "es6-map": "^0.1.1"
+    "tap": "^5.7.0"
   }
 }
